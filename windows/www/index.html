@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RemokeyWeb</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #1c1c1f;
+    --panel:     #242428;
+    --panel-2:   #2b2b30;
+    --border:    #3a3a40;
+    --fg:        #e6e6e9;
+    --fg-dim:    #9a9aa2;
+    --accent:    #d0d0d6;
+    --accent-fg: #1c1c1f;
+    --ok:        #5fbf6f;
+    --bad:       #d05a5a;
+  }
+
+  body {
+    font-family: -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 28px 16px;
+  }
+
+  .container {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--fg);
+  }
+
+  .port-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--fg-dim);
+    flex: 0 0 auto;
+  }
+
+  .port-box input {
+    width: 68px;
+    padding: 5px 8px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--fg);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    text-align: center;
+    transition: border-color .15s;
+  }
+  .port-box input:focus { border-color: #55555c; }
+
+  .mode-selector {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 14px;
+    padding: 8px 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .mode-selector label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--fg-dim);
+  }
+
+  .mode-selector input[type="radio"] { accent-color: #b0b0b8; }
+  .mode-selector label:has(input:checked) { color: var(--fg); }
+
+  textarea {
+    width: 100%;
+    height: 140px;
+    padding: 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--fg);
+    font-size: 15px;
+    line-height: 1.5;
+    resize: vertical;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .15s;
+  }
+  textarea:focus { border-color: #55555c; }
+  textarea::placeholder { color: #6a6a72; }
+
+  .button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  button {
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--panel-2);
+    color: var(--fg);
+    transition: background .15s, border-color .15s;
+    white-space: nowrap;
+  }
+  button:hover { background: #333338; border-color: #4a4a52; }
+  button:active { transform: translateY(1px); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: #e2e2e7; border-color: #e2e2e7; }
+
+  /* 三个清空按钮等分第一行 */
+  #clearRemote, #clearDraft, #clearBoth { flex: 1; }
+
+  /* 发送按钮独占第二行 */
+  #send { flex: 0 0 100%; order: 1; }
+
+  /* 实时模式下隐藏"发送"按钮 */
+  #send.hidden { display: none; }
+
+  .section {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .section h3 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 8px;
+  }
+
+  .grid {
+    display: grid;
+    gap: 6px;
+  }
+  .grid.cmds { grid-template-columns: repeat(3, 1fr); }
+
+  .grid button {
+    padding: 8px 6px;
+    font-size: 12.5px;
+    background: var(--panel-2);
+  }
+
+  /* ---------- 键盘区：4 列 × 2 行 ----------
+     行1: TAB   | UP    | MENU  | BKSP
+     行2: LEFT  | DOWN  | RIGHT | ENTER
+  */
+  .key-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .key-grid .key-btn {
+    padding: 12px 6px;
+    font-size: 12.5px;
+    background: var(--panel-2);
+    font-family: inherit;
+  }
+
+  .key-btn.arrow {
+    font-size: 15px;
+    line-height: 1;
+    padding: 11px 6px;
+  }
+
+  .status-bar {
+    margin-top: 16px;
+    padding: 8px 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--fg-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--bad);
+    flex: 0 0 auto;
+  }
+  .dot.on { background: var(--ok); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="title-row">
+    <h2>RemokeyWeb</h2>
+    <label class="port-box">
+      端口
+      <input type="number" id="portInput" value="8888" min="1" max="65535">
+    </label>
+  </div>
+
+  <div class="mode-selector">
+    <label><input type="radio" name="mode" value="realtime"> 实时模式</label>
+    <label><input type="radio" name="mode" value="draft" checked> 草稿模式</label>
+  </div>
+
+  <textarea id="text" placeholder="在此输入…"></textarea>
+
+  <div class="button-group">
+    <button id="clearRemote" class="btn-secondary">清空远端</button>
+    <button id="clearDraft" class="btn-secondary">清空本地</button>
+    <button id="clearBoth" class="btn-secondary">两端清空</button>
+    <button id="send" class="btn-primary">发送</button>
+  </div>
+
+  <div class="section">
+    <h3>功能按键</h3>
+    <!--
+      4 列 × 2 行布局：
+        TAB    UP     MENU   BACKSPACE
+        LEFT   DOWN   RIGHT  ENTER
+    -->
+    <div class="key-grid">
+      <button class="key-btn" data-key="tab">TAB</button>
+      <button class="key-btn" data-key="up">↑</button>
+      <button class="key-btn" data-key="menu">MENU</button>
+      <button class="key-btn" data-key="backspace">BACKSPACE</button>
+
+      <button class="key-btn arrow" data-key="left">←</button>
+      <button class="key-btn arrow" data-key="down">↓</button>
+      <button class="key-btn arrow" data-key="right">→</button>
+      <button class="key-btn" data-key="enter">ENTER</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>系统指令</h3>
+    <div class="grid cmds">
+      <button class="cmd-btn" data-cmd="select_all">全选</button>
+      <button class="cmd-btn" data-cmd="copy">复制</button>
+      <button class="cmd-btn" data-cmd="cut">剪切</button>
+      <button class="cmd-btn" data-cmd="paste">粘贴</button>
+      <button class="cmd-btn" data-cmd="undo">撤销</button>
+      <button class="cmd-btn" data-cmd="redo">重做</button>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span class="dot" id="connDot"></span>
+    <span id="statusText">正在连接…</span>
+  </div>
+</div>
+
+<script>
+(() => {
+  let ws = null;
+
+  const textEl      = document.getElementById("text");
+  const sendBtn     = document.getElementById("send");
+  const clearRemoteBtn = document.getElementById("clearRemote");
+  const clearDraftBtn = document.getElementById("clearDraft");
+  const clearBothBtn = document.getElementById("clearBoth");
+  const connDot     = document.getElementById("connDot");
+  const statusEl    = document.getElementById("statusText");
+  const portInput   = document.getElementById("portInput");
+
+  // 默认：草稿模式
+  let mode = "draft";
+  let lastSent = "";
+
+  // ---------- 端口读取 ----------
+  function getPort() {
+    const p = parseInt(portInput.value, 10);
+    if (Number.isInteger(p) && p >= 1 && p <= 65535) {
+      return p;
+    }
+    return 8888;
+  }
+
+  // ---------- 状态提示 ----------
+  function setStatus(msg, ok) {
+    statusEl.textContent = msg;
+    connDot.classList.toggle("on", !!ok);
+  }
+
+  // ---------- 按钮显隐：实时模式隐藏"发送" ----------
+  function applyModeUI() {
+    if (mode === "realtime") {
+      sendBtn.classList.add("hidden");
+    } else {
+      sendBtn.classList.remove("hidden");
+    }
+  }
+
+  // ---------- WebSocket ----------
+  function connect() {
+    const wsUrl = "ws://" + location.hostname + ":" + getPort() + "/ws";
+    setStatus("正在连接 " + wsUrl + " …", false);
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      setStatus("已连接", true);
+      lastSent = textEl.value;
+    };
+
+    ws.onclose = () => {
+      setStatus("连接断开，2 秒后重连…", false);
+      setTimeout(connect, 2000);
+    };
+
+    ws.onerror = () => {
+      setStatus("连接错误", false);
+    };
+  }
+
+  function wsSend(obj) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(obj));
+    }
+  }
+
+  // ---------- 实时模式：计算增量并推送 ----------
+  function pushRealtimeDelta(newValue) {
+    const oldValue = lastSent;
+    if (newValue === oldValue) return;
+
+    let i = 0;
+    const minLen = Math.min(oldValue.length, newValue.length);
+    while (i < minLen && oldValue[i] === newValue[i]) i++;
+
+    let oldEnd = oldValue.length;
+    let newEnd = newValue.length;
+    while (oldEnd > i && newEnd > i &&
+           oldValue[oldEnd - 1] === newValue[newEnd - 1]) {
+      oldEnd--; newEnd--;
+    }
+
+    const delCount = oldEnd - i;
+    const inserted = newValue.slice(i, newEnd);
+
+    if (delCount > 0) {
+      for (let k = 0; k < delCount; k++) {
+        wsSend({ type: "key", content: "backspace" });
+      }
+    }
+
+    if (inserted.length > 0) {
+      wsSend({ type: "text", content: inserted });
+    }
+
+    lastSent = newValue;
+  }
+
+  textEl.addEventListener("input", () => {
+    if (mode === "realtime") {
+      pushRealtimeDelta(textEl.value);
+    }
+  });
+
+  // ---------- 模式切换 ----------
+  document.querySelectorAll('input[name=mode]').forEach(r => {
+    r.addEventListener("change", e => {
+      mode = e.target.value;
+      // 切换模式时，把当前内容视为已同步基准，避免误发增量
+      lastSent = textEl.value;
+      applyModeUI();
+      setStatus(mode === "realtime" ? "Realtime mode" : "Draft mode", true);
+    });
+  });
+
+  // ---------- 发送按钮（仅草稿模式可见） ----------
+  sendBtn.addEventListener("click", () => {
+    const content = textEl.value;
+    if (!content) return;
+    wsSend({ type: "text", content });
+    lastSent = content;     // 保持基准与编辑框一致，避免切模式时误判增量
+    textEl.focus();         // 光标回到编辑框，方便继续输入
+    setStatus("Sent", true);
+  });
+
+  // ---------- 清空远端：仅让远端执行 Ctrl+A / Delete ----------
+  clearRemoteBtn.addEventListener("click", () => {
+    wsSend({ type: "cmd", content: "clear" });
+    setStatus("Cleared remote", true);
+  });
+
+  // ---------- 清空本地：只清本地，不动远端 ----------
+  clearDraftBtn.addEventListener("click", () => {
+    textEl.value = "";
+    lastSent = "";
+    setStatus("Cleared local", true);
+  });
+
+  // ---------- 两端清空：清本地 + 让远端执行 Ctrl+A / Delete ----------
+  clearBothBtn.addEventListener("click", () => {
+    textEl.value = "";
+    lastSent = "";
+    wsSend({ type: "cmd", content: "clear" });
+    setStatus("Cleared both", true);
+  });
+
+  // ---------- 功能按键 ----------
+  document.querySelectorAll(".key-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      wsSend({ type: "key", content: btn.dataset.key });
+      setStatus("Key: " + btn.textContent.trim(), true);
+    });
+  });
+
+  // ---------- 系统指令 ----------
+  document.querySelectorAll(".cmd-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      wsSend({ type: "cmd", content: btn.dataset.cmd });
+      setStatus("Command: " + btn.textContent.trim(), true);
+    });
+  });
+
+  // ---------- 端口变更：断开当前连接，用新端口重连 ----------
+  portInput.addEventListener("change", () => {
+    if (ws) {
+      // 先移除 onclose 定时重连，避免旧连接触发多余重连
+      ws.onclose = null;
+      try { ws.close(); } catch (e) {}
+      ws = null;
+    }
+    connect();
+  });
+
+  // 初始化 UI 并连接
+  applyModeUI();
+  connect();
+})();
+</script>
+
+</body>
+</html>

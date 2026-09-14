@@ -67,3 +67,24 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Archive Packages
+*.zip
+*.tar.gz
+*.tar.xz
+*.tar
+*.7z
+*.rar
+
+# key
+remokey.jks
+*.jks
+*.keystore
+keystore.properties
+
+# others
+thirdparty/
+dist/
+remokey_v*/
+key/
+
