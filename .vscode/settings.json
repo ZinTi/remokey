@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "/home/zin/dev/remokey/windows"
+    "cmake.sourceDirectory": "/home/zin/dev/remokey/windows",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

@@ -16,6 +16,7 @@ std::string Trim(const std::string& s) {
     return s.substr(b, e - b);
 }
 
+// 由配置解析直接使用，不能再标 [[maybe_unused]]
 std::string ToLower(std::string s) {
     std::transform(s.begin(), s.end(), s.begin(),
                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
@@ -48,9 +49,11 @@ void Config::Load() {
     // 重置为默认值
     listenAddress_ = "0.0.0.0";
     listenPort_    = 8888;
+    inputMode_     = "wm_char";
 
     std::wstring iniPath = utils::JoinExeDir(L"remokey_config.ini");
 
+    // -------------------- [server] address --------------------
     std::wstring waddr;
     if (ReadIniString(iniPath, L"server", L"address", waddr)) {
         std::string addr(waddr.begin(), waddr.end());
@@ -60,6 +63,7 @@ void Config::Load() {
         }
     }
 
+    // -------------------- [server] port --------------------
     std::wstring wport;
     if (ReadIniString(iniPath, L"server", L"port", wport)) {
         try {
@@ -70,6 +74,19 @@ void Config::Load() {
         } catch (...) {
             // 保持默认值
         }
+    }
+
+    // -------------------- [input] mode --------------------
+    // 只接受 "wm_char" 和 "sendinput" 两个值（大小写不敏感）；
+    // 其他值（含键不存在）一律保持默认 "wm_char"。
+    std::wstring wmode;
+    if (ReadIniString(iniPath, L"input", L"mode", wmode)) {
+        std::string mode(wmode.begin(), wmode.end());
+        mode = ToLower(Trim(mode));
+        if (mode == "wm_char" || mode == "sendinput") {
+            inputMode_ = mode;
+        }
+        // 其他值忽略，保持默认值
     }
 }
 

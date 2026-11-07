@@ -10,9 +10,6 @@
 #include <string>
 #include <vector>
 
-#pragma comment(lib, "ws2_32.lib")
-#pragma comment(lib, "iphlpapi.lib")
-
 namespace remokey {
 
 namespace {

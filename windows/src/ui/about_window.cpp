@@ -6,8 +6,8 @@ namespace remokey {
 namespace {
 
 constexpr const wchar_t* kAboutText =
-    L"Remokey v0.1.0\n\n"
-    L"远程键盘输入。";
+    L"Remokey v0.1.0-alpha2\n\n"
+    L"Remote Keyboard. Author: Zin";
 
 } // namespace
 

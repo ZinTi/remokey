@@ -16,6 +16,10 @@ public:
     const std::string& ListenAddress() const { return listenAddress_; }
     int                ListenPort()    const { return listenPort_; }
 
+    // 文本输入方式（字符串形式）："wm_char"（默认）或 "sendinput"
+    // 由 main.cpp 解析为 remokey::InputMode 并传给 InputSimulator
+    const std::string& InputMode() const { return inputMode_; }
+
 private:
     Config() = default;
     Config(const Config&) = delete;
@@ -23,6 +27,7 @@ private:
 
     std::string listenAddress_ = "0.0.0.0";
     int         listenPort_    = 8888;
+    std::string inputMode_     = "wm_char";   // 默认 WM_CHAR 模式
 };
 
 } // namespace remokey

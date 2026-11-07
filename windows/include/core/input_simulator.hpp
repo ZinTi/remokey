@@ -8,8 +8,18 @@
 
 namespace remokey {
 
+// 文本输入方式
+enum class InputMode {
+    POST_CHAR,   // 默认：PostMessage(WM_CHAR) 投递字符，绕过 IME 与键盘事件链
+    SEND_INPUT   // SendInput(KEYEVENTF_UNICODE) 注入键盘事件，经过 IME
+};
+
 class InputSimulator {
 public:
+    // 设置 / 获取当前文本输入方式（默认 WM_CHAR）
+    static void      SetInputMode(InputMode mode);
+    static InputMode GetInputMode();
+
     // 发送Unicode文本
     static bool SendText(const std::wstring& text);
     
@@ -31,6 +41,10 @@ private:
     
     // 发送组合键
     static bool SendHotkey(WORD vk, bool ctrl = false, bool shift = false, bool alt = false);
+
+    // 文本发送的两种实现
+    static bool SendTextViaWMChar(const std::wstring& text);
+    static bool SendTextViaSendInput(const std::wstring& text);
 };
 
 } // namespace remokey

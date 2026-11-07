@@ -269,6 +269,7 @@ target_link_libraries(remokey
         advapi32
         gdi32
         gdiplus
+        # imm32
         dbghelp
         dwmapi
 )
